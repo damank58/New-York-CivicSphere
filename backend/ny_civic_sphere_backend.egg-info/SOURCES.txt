@@ -1,0 +1,14 @@
+pyproject.toml
+app/__init__.py
+app/config.py
+app/main.py
+app/sample_data.py
+app/schemas.py
+app/clients/azure_functions.py
+app/clients/cosmos.py
+app/repositories/dashboard.py
+ny_civic_sphere_backend.egg-info/PKG-INFO
+ny_civic_sphere_backend.egg-info/SOURCES.txt
+ny_civic_sphere_backend.egg-info/dependency_links.txt
+ny_civic_sphere_backend.egg-info/requires.txt
+ny_civic_sphere_backend.egg-info/top_level.txt
