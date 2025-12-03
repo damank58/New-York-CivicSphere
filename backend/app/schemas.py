@@ -89,3 +89,56 @@ class DashboardResponse(BaseModel):
     events: List[Event]
     elections: List[Election]
 
+
+class Source(BaseModel):
+    title: str
+    url: Optional[str] = None
+    score: Optional[float] = None
+    content: Optional[str] = None
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatResponse(BaseModel):
+    response: str
+    sources: List[Source] = []
+
+
+class ForumPost(BaseModel):
+    id: str
+    thread_id: str
+    author: str
+    content: str
+    created_at: datetime
+    is_ai_moderator: bool = False
+    parent_post_id: Optional[str] = None
+
+
+class ForumThread(BaseModel):
+    id: str
+    topic_id: str  # Links to Discussion.id
+    title: str
+    category: str
+    summary: str
+    created_at: datetime
+    author: str
+    post_count: int
+    last_activity: datetime
+
+
+class ForumThreadResponse(BaseModel):
+    thread: ForumThread
+    posts: List[ForumPost]
+
+
+class CreatePostRequest(BaseModel):
+    content: str
+    author: str = "Current User"  # Default, can be overridden
+    parent_post_id: Optional[str] = None
+
+
+class ForumResponse(BaseModel):
+    threads: List[ForumThread]
+

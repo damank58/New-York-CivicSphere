@@ -73,6 +73,38 @@ STUB_DASHBOARD = {
             "replies_count": 17,
             "last_active_minutes": 55,
         },
+        {
+            "id": "disc-3",
+            "topic": "Affordable housing development in Brooklyn",
+            "category": "Housing",
+            "sentiment": "Mixed",
+            "replies_count": 28,
+            "last_active_minutes": 32,
+        },
+        {
+            "id": "disc-4",
+            "topic": "Subway line extension to Queens",
+            "category": "Infrastructure",
+            "sentiment": "Positive",
+            "replies_count": 56,
+            "last_active_minutes": 12,
+        },
+        {
+            "id": "disc-5",
+            "topic": "Congestion pricing implementation",
+            "category": "Transportation",
+            "sentiment": "Mixed",
+            "replies_count": 89,
+            "last_active_minutes": 5,
+        },
+        {
+            "id": "disc-6",
+            "topic": "Water main replacement project timeline",
+            "category": "Infrastructure",
+            "sentiment": "Neutral",
+            "replies_count": 15,
+            "last_active_minutes": 67,
+        },
     ],
     "events": [
         {

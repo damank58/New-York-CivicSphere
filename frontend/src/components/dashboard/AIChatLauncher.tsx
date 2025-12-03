@@ -1,13 +1,7 @@
-import { useState, useEffect, useMemo } from "react";
-import { FaRobot, FaTimes, FaChevronRight, FaPaperPlane, FaChevronDown, FaCircle, FaPlus, FaCommentDots } from "react-icons/fa";
-
-type Message = {
-  id: string;
-  author: "user" | "assistant";
-  content: string;
-  timestamp: string;
-  variant?: "info" | "success";
-};
+import { useState, useEffect, useRef } from "react";
+import { FaRobot, FaTimes, FaChevronRight, FaPaperPlane, FaChevronDown, FaCircle, FaPlus, FaCommentDots, FaSpinner } from "react-icons/fa";
+import { sendChatMessage } from "../../services/api";
+import type { ChatMessage, Source } from "../../types/chat";
 
 type HistoryCard = {
   id: string;
@@ -69,43 +63,10 @@ const historyCards: HistoryCard[] = [
   },
 ];
 
-const defaultMessages: Message[] = [
-  {
-    id: "msg-1",
-    author: "user",
-    content: "Can you explain the new Housing Affordability Act in simple terms? I'm not familiar with policy language.",
-    timestamp: "2 hours ago",
-  },
-  {
-    id: "msg-2",
-    author: "assistant",
-    variant: "info",
-    content:
-      "NYC Housing Affordability Act 2024 – Explained Simply\n\n• Rent Control: More apartments will have rent limits to keep them affordable.\n• Tenant Protection: Landlords can't evict you without good reason.\n• More Affordable Housing: The city will build more apartments working families can afford.\n• Landlord Rules: Owners must register with the city and keep apartments in good condition.",
-    timestamp: "2 hours ago",
-  },
-  {
-    id: "msg-3",
-    author: "assistant",
-    content:
-      "What this means for you:\nIf you're a renter, you'll have more protection against unfair rent increases and evictions. If you're looking for housing, there should be more affordable options available.",
-    timestamp: "2 hours ago",
-  },
-  {
-    id: "msg-4",
-    author: "user",
-    content: "That's really helpful! Does this apply to my building? I live in a building from 2008.",
-    timestamp: "2 hours ago",
-  },
-  {
-    id: "msg-5",
-    author: "assistant",
-    variant: "success",
-    content:
-      "Yes! Since your building was constructed in 2008 (before 2010), the new rent stabilization rules will apply to your building.\n\nWhat this means for you:\n• Your rent increases will be limited by city guidelines.\n• You'll have stronger protection against eviction.\n• Your landlord must follow new registration requirements.",
-    timestamp: "2 hours ago",
-  },
-];
+const formatTimestamp = (): string => {
+  const now = new Date();
+  return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
 
 const IconBadge = ({ icon }: { icon: string }) => {
   const iconMap: Record<string, JSX.Element> = {
@@ -119,7 +80,7 @@ const IconBadge = ({ icon }: { icon: string }) => {
   return <div className="shrink-0 rounded-full bg-blue-50 p-2 text-blue-600">{iconMap[icon] ?? iconMap.policy}</div>;
 };
 
-const MessageBubble = ({ message }: { message: Message }) => {
+const MessageBubble = ({ message }: { message: ChatMessage }) => {
   const isUser = message.author === "user";
   const base =
     "rounded-2xl px-4 py-3 text-sm whitespace-pre-line";
@@ -146,6 +107,11 @@ const MessageBubble = ({ message }: { message: Message }) => {
 export const AIChatLauncher = ({ summary, isOpen: controlledIsOpen, onOpen, onClose }: Props) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentSources, setCurrentSources] = useState<Source[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const setIsOpen = (value: boolean) => {
@@ -159,7 +125,66 @@ export const AIChatLauncher = ({ summary, isOpen: controlledIsOpen, onOpen, onCl
     }
   };
 
-  const messages = useMemo(() => defaultMessages, []);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim() || loading) return;
+
+    const userMessage: ChatMessage = {
+      id: `msg-${Date.now()}-user`,
+      author: "user",
+      content: messageText,
+      timestamp: formatTimestamp(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputValue("");
+    setLoading(true);
+    setError(null);
+    setCurrentSources([]);
+
+    try {
+      const response = await sendChatMessage(messageText);
+      
+      const assistantMessage: ChatMessage = {
+        id: `msg-${Date.now()}-assistant`,
+        author: "assistant",
+        content: response.response,
+        timestamp: formatTimestamp(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+      setCurrentSources(response.sources || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to get response. Please try again.";
+      setError(errorMessage);
+      
+      const errorMsg: ChatMessage = {
+        id: `msg-${Date.now()}-error`,
+        author: "assistant",
+        content: `Sorry, I encountered an error: ${errorMessage}`,
+        timestamp: formatTimestamp(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendMessage(inputValue);
+  };
+
+  const handleQuickQuestion = (question: string) => {
+    handleSendMessage(question);
+  };
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -225,18 +250,22 @@ export const AIChatLauncher = ({ summary, isOpen: controlledIsOpen, onOpen, onCl
             <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
               <div className="flex flex-1 flex-col overflow-hidden">
                 <div className="flex-1 overflow-y-auto px-6 py-4">
-                  <div className="mb-4">
-                    <div className="flex flex-wrap items-center gap-3">
-                      {quickQuestions.map((question) => (
-                        <button
-                          key={question}
-                          className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-indigo-200 hover:text-indigo-600"
-                        >
-                          {question}
-                        </button>
-                      ))}
+                  {messages.length === 0 && (
+                    <div className="mb-4">
+                      <div className="flex flex-wrap items-center gap-3">
+                        {quickQuestions.map((question) => (
+                          <button
+                            key={question}
+                            onClick={() => handleQuickQuestion(question)}
+                            disabled={loading}
+                            className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:border-indigo-200 hover:text-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {question}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="space-y-6">
                     {messages.map((message) => (
@@ -245,34 +274,62 @@ export const AIChatLauncher = ({ summary, isOpen: controlledIsOpen, onOpen, onCl
                         <p className="text-xs text-slate-400">{message.timestamp}</p>
                       </div>
                     ))}
+                    {loading && (
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                        <span>Thinking...</span>
+                      </div>
+                    )}
+                    {error && !loading && (
+                      <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700">
+                        {error}
+                      </div>
+                    )}
+                    <div ref={messagesEndRef} />
                   </div>
 
-                  <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-                    <p className="font-semibold text-slate-900">Sources:</p>
-                    <div className="mt-2 flex flex-wrap gap-3 text-sm font-semibold text-indigo-600">
-                      <a href="#" className="flex items-center gap-1">
-                        NYC Housing Development Corporation • Policy Text <FaChevronRight className="h-3 w-3" />
-                      </a>
-                      <a href="#" className="flex items-center gap-1">
-                        Mayor's Office Press Release <FaChevronRight className="h-3 w-3" />
-                      </a>
+                  {currentSources.length > 0 && (
+                    <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                      <p className="font-semibold text-slate-900">Sources:</p>
+                      <div className="mt-2 flex flex-col gap-2">
+                        {currentSources.map((source, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-1 text-sm font-semibold text-slate-700"
+                          >
+                            {source.title}
+                            {source.score && (
+                              <span className="text-xs text-slate-500">({(source.score * 100).toFixed(0)}% match)</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 <div className="border-t border-slate-200 bg-white px-6 py-4 flex-shrink-0">
-                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <form onSubmit={handleSubmit} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <input
                       type="text"
                       value={inputValue}
                       onChange={(event) => setInputValue(event.target.value)}
                       placeholder="Ask me anything about NYC policies, services, or civic information..."
                       className="flex-1 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+                      disabled={loading}
                     />
-                    <button className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:scale-105">
-                      <FaPaperPlane className="h-4 w-4" />
+                    <button
+                      type="submit"
+                      disabled={loading || !inputValue.trim()}
+                      className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    >
+                      {loading ? (
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FaPaperPlane className="h-4 w-4" />
+                      )}
                     </button>
-                  </div>
+                  </form>
                 </div>
               </div>
 

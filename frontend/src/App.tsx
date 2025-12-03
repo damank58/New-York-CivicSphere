@@ -13,6 +13,8 @@ import { ActivityPulse } from "./components/dashboard/ActivityPulse";
 import { ServiceAlertsTimeline } from "./components/alerts/ServiceAlertsTimeline";
 import { EventsTimeline } from "./components/events/EventsTimeline";
 import { StoryDetail } from "./components/stories/StoryDetail";
+import { ForumPage } from "./components/forum/ForumPage";
+import { ThreadDetail } from "./components/forum/ThreadDetail";
 import { useDashboard } from "./hooks/useDashboard";
 import { useAISummary } from "./hooks/useAISummary";
 
@@ -39,7 +41,7 @@ const Dashboard = () => {
                 <div className="space-y-6 lg:col-span-2">
                   <FeaturedStories stories={data?.stories ?? []} isLoading={isLoading} />
                   <PoliciesList policies={data?.policies ?? []} isLoading={isLoading} onAskAI={() => setIsChatOpen(true)} />
-                  <DiscussionsList discussions={data?.discussions ?? []} isLoading={isLoading} onSummarizeAI={() => setIsChatOpen(true)} />
+                  <DiscussionsList discussions={data?.discussions ?? []} isLoading={isLoading} />
                 </div>
                 <div className="space-y-6">
                   <ActivityPulse />
@@ -64,6 +66,8 @@ const App = () => {
         <Route path="/alerts" element={<ServiceAlertsTimeline />} />
         <Route path="/events" element={<EventsTimeline />} />
         <Route path="/story/:id" element={<StoryDetail />} />
+        <Route path="/forum" element={<ForumPage />} />
+        <Route path="/forum/thread/:id" element={<ThreadDetail />} />
       </Routes>
     </div>
   );

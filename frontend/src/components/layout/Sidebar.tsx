@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { 
   FaHome, 
   FaFileAlt, 
@@ -23,7 +24,8 @@ const menuItems = [
   { label: "Events", icon: FaCalendarAlt, active: false },
 ];
 
-export const Sidebar = ({ onAIAssistantClick }: SidebarProps) => (
+export const Sidebar = ({ onAIAssistantClick }: SidebarProps) => {
+  return (
   <aside className="fixed left-0 top-0 h-screen w-[280px] flex flex-col bg-white border-r border-slate-200 z-10">
     {/* Logo Section */}
     <div className="p-6 border-b border-slate-200">
@@ -45,15 +47,59 @@ export const Sidebar = ({ onAIAssistantClick }: SidebarProps) => (
       {menuItems.map((item) => {
         const Icon = item.icon;
         const isAIAssistant = item.label === "AI Assistant";
+        const isEvents = item.label === "Events";
+        const isCommunityForum = item.label === "Community Forum";
+        const isHome = item.label === "Home";
+        const buttonClassName = `w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+          item.active
+            ? "bg-blue-50 text-blue-700"
+            : "text-slate-600 hover:bg-slate-50"
+        }`;
+        
+        if (isHome) {
+          return (
+            <Link
+              key={item.label}
+              to="/"
+              className={buttonClassName}
+            >
+              <Icon className={`w-5 h-5 ${item.active ? "text-blue-600" : "text-slate-500"}`} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        }
+        
+        if (isEvents) {
+          return (
+            <Link
+              key={item.label}
+              to="/events"
+              className={buttonClassName}
+            >
+              <Icon className={`w-5 h-5 ${item.active ? "text-blue-600" : "text-slate-500"}`} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        }
+        
+        if (isCommunityForum) {
+          return (
+            <Link
+              key={item.label}
+              to="/forum"
+              className={buttonClassName}
+            >
+              <Icon className={`w-5 h-5 ${item.active ? "text-blue-600" : "text-slate-500"}`} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        }
+        
         return (
           <button
             key={item.label}
             onClick={isAIAssistant ? onAIAssistantClick : undefined}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-              item.active
-                ? "bg-blue-50 text-blue-700"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
+            className={buttonClassName}
           >
             <Icon className={`w-5 h-5 ${item.active ? "text-blue-600" : "text-slate-500"}`} />
             <span>{item.label}</span>
@@ -81,4 +127,5 @@ export const Sidebar = ({ onAIAssistantClick }: SidebarProps) => (
     </div>
   </aside>
 );
+};
 
