@@ -57,6 +57,10 @@ jobs:
     - name: Copy frontend build to backend
       run: cp -r frontend/dist/* backend/static/
 
+    # Ensure startup.sh is executable
+    - name: Make startup.sh executable
+      run: chmod +x backend/startup.sh
+
     # Login to Azure
     - name: Login to Azure
       uses: azure/login@v2

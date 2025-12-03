@@ -360,9 +360,13 @@ app.mount("/api", api_app)
 # Serve static files if the directory exists
 if STATIC_DIR.exists():
     # Serve assets from /assets path
-    app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
+    assets_dir = STATIC_DIR / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
     
     # Serve index.html for all non-API routes (SPA fallback)
+    # This catch-all route will only match if /api and /assets mounts don't match
+    # FastAPI checks mounts before route handlers, so this is safe
     @app.get("/{full_path:path}")
     def serve_spa(full_path: str):
         """Serve the React app for all non-API routes."""
