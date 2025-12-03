@@ -1,9 +1,6 @@
 name: Deploy Static Backend to Azure App Services
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
