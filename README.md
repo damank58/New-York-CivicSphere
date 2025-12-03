@@ -1,6 +1,14 @@
 # NY Civic Sphere
 
-Full-stack civic intelligence dashboard that mirrors the provided NY Civic Sphere mockup. The stack uses FastAPI (Python) for Azure-ready APIs and a React + TypeScript frontend powered by Vite and Tailwind CSS.
+AI-powered civic engagement platform providing New Yorkers with access to local government info, policy updates, ballot questions, community discussions, and AI-assisted insights. 
+
+
+## Project Stack
+
+- Backend: FastAPI (Python), Azure-ready APIs
+- Frontend: React + TypeScript, Vite, Tailwind CSS
+- Cloud: Azure App Service, Functions, Cosmos DB, Cognitive Services
+
 
 ## Project Structure
 
@@ -43,4 +51,16 @@ The Vite dev server proxies `/api/*` calls to `http://localhost:8000` so both st
 
 ## API Documentation
 See `docs/api-reference.md` for each endpoint's method, parameters, and sample JSON payloads.
+
+## Architecture Diagram
+
+
+<img width="984" height="554" alt="Screenshot 2025-12-03 at 11 54 26 AM" src="https://github.com/user-attachments/assets/28f6d0b1-5f61-4140-8375-9fbd24ddf0f4" />
+
+
+## Team Members
+
+- Damanpreet Kaur
+- Olabimpe Sanni
+
 
